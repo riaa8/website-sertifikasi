@@ -1,0 +1,1526 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <base target="_top">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        slate: {
+                            950: '#020617',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <?!= include('style'); ?>
+</head>
+
+<body class="flex h-screen overflow-hidden">
+
+    <!-- Global Full-Screen Loading Overlay -->
+    <div id="loading-container">
+        <div class="loader-ring mb-6"></div>
+        <div class="text-center loading-pulse">
+            <p class="loading-title">Menyiapkan Dashboard</p>
+            <p id="loading-subtext" class="loading-subtitle">Mohon tunggu sebentar...</p>
+        </div>
+    </div>
+
+    <?!= include('Sidebar'); ?>
+
+    <div class="flex-1 flex flex-col h-full overflow-hidden relative">
+
+
+        <div
+            class="bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800 px-8 py-4 flex justify-between items-center z-10">
+            <div>
+                <h1 id="page-title" class="text-2xl font-bold text-[#1E1B4B] dark:text-gray-100">Dashboard</h1>
+                <p id="page-desc" class="text-xs font-medium text-gray-400 mt-1">Sistem Informasi Sertifikasi & LAT</p>
+            </div>
+            <div class="flex items-center gap-6">
+
+                <!-- Search Bar -->
+                <div class="relative hidden lg:block">
+                    <input type="text" placeholder="Cari sesuatu..."
+                        class="w-64 pl-4 pr-10 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all dark:text-gray-200">
+                    <i data-lucide="search" class="absolute right-3.5 top-3 w-4 h-4 text-gray-400"></i>
+                </div>
+
+                <div class="flex items-center gap-4 border-l border-gray-100 dark:border-slate-800 pl-6">
+                    <button id="dark-mode-toggle" onclick="toggleDarkMode()"
+                        class="p-2.5 text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-800 hover:text-[#6366F1] rounded-xl transition-all">
+                        <i data-lucide="moon" class="w-5 h-5" id="dark-mode-icon"></i>
+                    </button>
+                    <div class="flex items-center gap-3 pl-2">
+                        <div
+                            class="w-9 h-9 rounded-full bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center text-[#6366F1] dark:text-indigo-400 font-bold text-sm">
+                            A</div>
+                        <div class="hidden sm:block">
+                            <p class="text-xs font-bold text-[#1E1B4B] dark:text-gray-200">Admin User</p>
+                            <p class="text-[10px] text-gray-400 font-medium">Super Admin</p>
+                        </div>
+                        <i data-lucide="chevron-down" class="w-4 h-4 text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-8 bg-[#F9FAFB] dark:bg-slate-950">
+
+
+            <div id="page-dashboard" class="content-section hidden">
+
+                <!-- ROW 1: 4 Stat Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+
+                    <!-- Total Pelaksanaan -->
+                    <div
+                        class="bg-white dark:bg-slate-900 p-6 rounded-[32px] border border-gray-50 dark:border-slate-800 shadow-sm flex flex-col justify-between relative overflow-hidden h-44">
+                        <div class="flex items-center gap-3">
+                            <div
+                                class="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center text-[#6366F1]">
+                                <i data-lucide="activity" class="w-5 h-5"></i>
+                            </div>
+                            <p class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">PELAKSANAAN</p>
+                        </div>
+                        <div class="mt-4">
+                            <h3 class="text-3xl font-extrabold text-[#1E1B4B]" id="dash-total-pelaksanaan">0</h3>
+                            <p class="text-xs text-gray-400 mt-1">Total kegiatan</p>
+                        </div>
+                        <!-- Simple CSS Sparkline Mockup -->
+                        <div class="absolute bottom-6 right-6 w-24 h-12">
+                            <svg viewBox="0 0 100 40" class="w-full h-full stroke-[#6366F1] fill-none" stroke-width="3"
+                                stroke-linecap="round">
+                                <path d="M0,35 Q20,35 40,20 T80,25 T100,5" />
+                            </svg>
+                        </div>
+                    </div>
+
+                    <!-- Total Sertifikasi -->
+                    <div
+                        class="bg-white dark:bg-slate-900 p-6 rounded-[32px] border border-gray-50 dark:border-slate-800 shadow-sm flex flex-col justify-between relative overflow-hidden h-44">
+                        <div class="flex items-center gap-3">
+                            <div
+                                class="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center text-[#10B981]">
+                                <i data-lucide="scroll" class="w-5 h-5"></i>
+                            </div>
+                            <p class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">SERTIFIKASI</p>
+                        </div>
+                        <div class="mt-4">
+                            <h3 class="text-3xl font-extrabold text-[#1E1B4B]" id="dash-total-cert">0</h3>
+                            <p class="text-xs text-gray-400 mt-1">Total perencanaan</p>
+                        </div>
+                        <div class="absolute bottom-6 right-6 w-24 h-12 text-[#10B981]">
+                            <svg viewBox="0 0 100 40" class="w-full h-full stroke-current fill-none" stroke-width="3"
+                                stroke-linecap="round">
+                                <path d="M0,35 Q20,35 40,30 T80,15 T100,20" />
+                            </svg>
+                        </div>
+                    </div>
+
+                    <!-- Total LAT -->
+                    <div
+                        class="bg-white p-6 rounded-[32px] border border-gray-50 shadow-sm flex flex-col justify-between relative overflow-hidden h-44">
+                        <div class="flex items-center gap-3">
+                            <div
+                                class="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center text-[#3B82F6]">
+                                <i data-lucide="book-open" class="w-5 h-5"></i>
+                            </div>
+                            <p class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">LAT</p>
+                        </div>
+                        <div class="mt-4">
+                            <h3 class="text-3xl font-extrabold text-[#1E1B4B]" id="dash-total-lat">0</h3>
+                            <p class="text-xs text-gray-400 mt-1">Total perencanaan</p>
+                        </div>
+                        <div class="absolute bottom-6 right-6 w-24 h-12 text-[#3B82F6]">
+                            <svg viewBox="0 0 100 40" class="w-full h-full stroke-current fill-none" stroke-width="3"
+                                stroke-linecap="round">
+                                <path d="M0,35 Q20,30 40,35 T80,20 T100,5" />
+                            </svg>
+                        </div>
+                    </div>
+
+                    <!-- Total Evaluasi -->
+                    <div
+                        class="bg-white p-6 rounded-[32px] border border-gray-50 shadow-sm flex flex-col justify-between relative overflow-hidden h-44">
+                        <div class="flex items-center gap-3">
+                            <div
+                                class="w-10 h-10 bg-orange-50 rounded-xl flex items-center justify-center text-[#F97316]">
+                                <i data-lucide="clipboard-list" class="w-5 h-5"></i>
+                            </div>
+                            <p class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">EVALUASI</p>
+                        </div>
+                        <div class="mt-4">
+                            <h3 class="text-3xl font-extrabold text-[#1E1B4B]" id="dash-total-evaluasi">0</h3>
+                            <div class="flex gap-2 mt-2">
+                                <span
+                                    class="text-[9px] px-2 py-0.5 bg-indigo-50 text-indigo-600 rounded-full font-bold">L1:<span
+                                        id="dash-l1-total">0</span></span>
+                                <span
+                                    class="text-[9px] px-2 py-0.5 bg-emerald-50 text-emerald-600 rounded-full font-bold">L2:<span
+                                        id="dash-l2-total">0</span></span>
+                                <span
+                                    class="text-[9px] px-2 py-0.5 bg-orange-50 text-orange-600 rounded-full font-bold">L3:<span
+                                        id="dash-l3-total">0</span></span>
+                            </div>
+                        </div>
+                        <div class="absolute bottom-6 right-6 w-24 h-12 text-[#F97316]">
+                            <svg viewBox="0 0 100 40" class="w-full h-full stroke-current fill-none" stroke-width="3"
+                                stroke-linecap="round">
+                                <path d="M0,35 Q20,30 40,20 T80,10 T100,5" />
+                            </svg>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- ROW 2: Evaluasi Breakdown Per Tahun -->
+                <div class="mb-8">
+                    <div class="flex items-center justify-between mb-6 px-1">
+                        <div class="flex items-center gap-3">
+                            <i data-lucide="bar-chart-3" class="w-5 h-5 text-gray-400"></i>
+                            <span class="text-xs font-bold text-gray-500 uppercase tracking-widest">EVALUASI PER
+                                TAHUN</span>
+                        </div>
+                        <select
+                            class="bg-white border border-gray-100 rounded-xl px-4 py-2 text-xs font-bold text-gray-500 focus:outline-none shadow-sm">
+                            <option>Semua Level</option>
+                        </select>
+                    </div>
+                    <div id="dash-evaluasi-year-breakdown"
+                        class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                        <span class="italic text-gray-300 text-xs col-span-full text-center py-20">Memuat data
+                            statistik...</span>
+                    </div>
+                </div>
+
+                <!-- ROW 3: Bottom Small Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div class="bg-white p-5 rounded-[24px] border border-gray-50 shadow-sm flex items-center gap-4">
+                        <div
+                            class="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600">
+                            <i data-lucide="pie-chart" class="w-6 h-6"></i>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-bold text-gray-400">Perencanaan Aktif</p>
+                            <p class="text-xl font-bold text-[#1E1B4B]" id="dash-bot-cert">0</p>
+                            <p class="text-[10px] text-gray-400 mt-0.5">Total rencana berjalan</p>
+                        </div>
+                    </div>
+                    <div class="bg-white p-5 rounded-[24px] border border-gray-50 shadow-sm flex items-center gap-4">
+                        <div
+                            class="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600">
+                            <i data-lucide="check-square" class="w-6 h-6"></i>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-bold text-gray-400">Sertifikasi Selesai</p>
+                            <p class="text-xl font-bold text-[#1E1B4B]" id="dash-bot-real">0</p>
+                            <p class="text-[10px] text-gray-400 mt-0.5">Total sertifikasi selesai</p>
+                        </div>
+                    </div>
+                    <div class="bg-white p-5 rounded-[24px] border border-gray-50 shadow-sm flex items-center gap-4">
+                        <div class="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600">
+                            <i data-lucide="clock" class="w-6 h-6"></i>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-bold text-gray-400">LAT Terlaksana</p>
+                            <p class="text-xl font-bold text-[#1E1B4B]" id="dash-bot-lat">0</p>
+                            <p class="text-[10px] text-gray-400 mt-0.5">Total LAT terlaksana</p>
+                        </div>
+                    </div>
+                    <div class="bg-white p-5 rounded-[24px] border border-gray-50 shadow-sm flex items-center gap-4">
+                        <div
+                            class="w-12 h-12 bg-orange-50 rounded-2xl flex items-center justify-center text-orange-600">
+                            <i data-lucide="clipboard-check" class="w-6 h-6"></i>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-bold text-gray-400">Evaluasi Tersimpan</p>
+                            <p class="text-xl font-bold text-[#1E1B4B]" id="dash-bot-eval">0</p>
+                            <p class="text-[10px] text-gray-400 mt-0.5">Total evaluasi tersimpan</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div id="page-vendor" class="content-section hidden">
+
+
+                <div class="flex flex-wrap gap-4 mb-6">
+                    <div class="flex-1 min-w-[200px]">
+                        <div class="relative">
+                            <i data-lucide="search"
+                                class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></i>
+                            <input type="text" id="vendor-search-input" onkeyup="debouncedRenderVendorTable()"
+                                placeholder="Cari nama vendor atau sertifikasi..."
+                                class="w-full pl-11 pr-4 py-3 bg-gray-50 dark:bg-slate-800 border-none rounded-2xl text-sm dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 transition-all">
+                        </div>
+                    </div>
+                    <select id="vendor-filter-status" onchange="renderVendorTable()"
+                        class="px-4 py-3 bg-gray-50 dark:bg-slate-800 border-none rounded-2xl text-sm font-medium dark:text-gray-200 focus:ring-2 focus:ring-indigo-500 transition-all cursor-pointer">
+                        <option value="">Semua Status</option>
+                        <option value="Pending">🕒 Pending</option>
+                        <option value="Disetujui">✅ Disetujui</option>
+                        <option value="Ditolak">❌ Ditolak</option>
+                    </select>
+                </div>
+
+                <div
+                    class="bg-white dark:bg-slate-900 rounded-[32px] border border-gray-100 dark:border-slate-800 shadow-sm overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-gray-50/50 dark:bg-slate-800/50">
+                                    <th
+                                        class="px-6 py-5 text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
+                                        No</th>
+                                    <th
+                                        class="px-6 py-5 text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
+                                        Nama Vendor</th>
+                                    <th
+                                        class="px-6 py-5 text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] text-center">
+                                        Ajuan</th>
+                                    <th
+                                        class="px-6 py-5 text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
+                                        PIC / Kontak</th>
+                                    <th
+                                        class="px-6 py-5 text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] text-center">
+                                    </th>
+                                    <th
+                                        class="px-6 py-5 text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] text-center">
+                                    </th>
+                                    <th
+                                        class="px-6 py-5 text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] text-center">
+                                    </th>
+                                    <th
+                                        class="px-6 py-5 text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] text-center">
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody id="vendor-table-body" class="divide-y divide-gray-50">
+                                <!-- Data will be loaded via script -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="page-perencanaan" class="content-section hidden">
+
+
+                <!-- CALENDAR VIEW CONTAINER -->
+                <div id="view-planning-calendar" class="hidden">
+                    <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                        <div id="calendar"></div>
+                    </div>
+                </div>
+
+                <!-- LIST VIEW CONTAINER (Existing Views) -->
+                <div id="container-planning-list">
+                    <!-- View 1: Year Selection -->
+                    <div id="view-planning-years" class="block">
+                        <h3 class="text-lg font-bold text-gray-700 mb-4">Pilih Periode Tahun</h3>
+                        <div id="years-grid"
+                            class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
+                    </div>
+
+                    <!-- View 2: Month Selection (NEW!) -->
+                    <div id="view-planning-months" class="hidden">
+                        <!-- Navigation Exit -->
+                        <div class="mb-6">
+                            <button onclick="backToYears()"
+                                class="inline-flex items-center gap-2.5 px-5 py-2.5 bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-100 dark:hover:border-indigo-500/30 transition-all shadow-sm text-sm font-bold group">
+                                <i data-lucide="arrow-left"
+                                    class="w-4 h-4 group-hover:-translate-x-1 transition-transform"></i>
+                                Kembali ke Daftar Tahun
+                            </button>
+                        </div>
+                        <h3 class="text-lg font-bold text-gray-700 mb-2">Pilih Bulan</h3>
+                        <p class="text-sm text-gray-500 mb-6">Tahun: <span id="selected-year-months"
+                                class="font-bold text-indigo-600"></span></p>
+                        <div id="months-grid"
+                            class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4"></div>
+                    </div>
+
+                    <div id="view-planning-list" class="hidden">
+                        <!-- Navigation Exit -->
+                        <div class="mb-6">
+                            <button onclick="backToYears()"
+                                class="inline-flex items-center gap-2.5 px-5 py-2.5 bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-100 dark:hover:border-indigo-500/30 transition-all shadow-sm text-sm font-bold group">
+                                <i data-lucide="arrow-left"
+                                    class="w-4 h-4 group-hover:-translate-x-1 transition-transform"></i>
+                                Kembali ke Daftar Tahun
+                            </button>
+                        </div>
+
+                        <div
+                            class="mb-6 bg-white dark:bg-slate-900 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-slate-800 relative z-30">
+                            <div class="flex flex-col lg:flex-row gap-4 justify-between">
+                                <div class="flex items-center gap-4">
+                                    <div class="relative inline-block text-left">
+                                        <button onclick="toggleAddDropdown(event)"
+                                            class="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-md text-sm font-medium">+
+                                            Tambah Data</button>
+                                        <div id="add-dropdown-menu"
+                                            class="hidden absolute left-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
+                                            <div class="py-1">
+                                                <a href="#" onclick="openModal('cert'); return false;"
+                                                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50">Tambah
+                                                    Sertifikasi</a>
+                                                <a href="#" onclick="openModal('lat'); return false;"
+                                                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-emerald-50">Tambah
+                                                    LAT</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex flex-col sm:flex-row gap-3 items-center w-full lg:w-auto">
+                                    <select id="emp-filter-status" onchange="renderEmployeeList()"
+                                        class="appearance-none w-full sm:w-48 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                        <option value="">Semua Status</option>
+                                        <option value="Tersedia">Anggaran Tersedia</option>
+                                        <option value="Tidak Tersedia">Tidak Tersedia</option>
+                                    </select>
+                                    <input type="text" id="emp-search-input" oninput="debouncedRenderEmployeeList()"
+                                        placeholder="Cari Nama / SAP..."
+                                        class="w-full sm:w-64 px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                </div>
+                            </div>
+                            <div class="mt-2 text-xs text-gray-400 text-right w-full">Menampilkan data untuk: <span
+                                    id="selected-year-display" class="font-bold text-gray-600">...</span></div>
+                        </div>
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                            <div
+                                class="grid grid-cols-12 bg-gray-50 px-6 py-3 border-b border-gray-200 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                <div class="col-span-1">No</div>
+                                <div class="col-span-2">SAP</div>
+                                <div class="col-span-8">Nama Karyawan</div>
+                                <div class="col-span-1 text-center">Detail</div>
+                            </div>
+                            <div id="employee-list-container" class="divide-y divide-gray-100"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="page-pelaksanaan" class="content-section hidden">
+
+
+                <!-- CALENDAR VIEW CONTAINER -->
+                <div id="view-realization-calendar" class="hidden">
+                    <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                        <div id="calendar-realization"></div>
+                    </div>
+                </div>
+
+                <!-- LIST VIEW CONTAINER -->
+                <div id="container-realization-list">
+                    <div id="view-realization-years" class="block">
+                        <h3 class="text-lg font-bold text-gray-700 dark:text-gray-200 mb-4">Pilih Tahun Pelaksanaan</h3>
+                        <div id="years-grid-realization"
+                            class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                        </div>
+                    </div>
+
+                    <div id="view-realization-list" class="hidden">
+                        <!-- Navigation Exit -->
+                        <div class="mb-6">
+                            <button onclick="backToRealizationYears()"
+                                class="inline-flex items-center gap-2.5 px-5 py-2.5 bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl text-gray-500 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:border-emerald-100 dark:hover:border-emerald-500/30 transition-all shadow-sm text-sm font-bold group">
+                                <i data-lucide="arrow-left"
+                                    class="w-4 h-4 group-hover:-translate-x-1 transition-transform"></i>
+                                Kembali ke Daftar Tahun
+                            </button>
+                        </div>
+
+                        <div
+                            class="mb-6 bg-white dark:bg-slate-900 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-slate-800 relative z-30">
+                            <div class="flex flex-col lg:flex-row gap-4 justify-between">
+                                <div class="flex items-center gap-4">
+                                    <div
+                                        class="flex bg-gray-100/50 dark:bg-slate-800/50 p-1 rounded-xl border border-gray-200 dark:border-slate-700">
+                                        <button id="tab-real-peserta" onclick="switchRealizationView('peserta')"
+                                            class="real-tab-btn active">Berdasarkan Peserta</button>
+                                        <button id="tab-real-judul" onclick="switchRealizationView('judul')"
+                                            class="real-tab-btn">Berdasarkan Pelatihan</button>
+                                    </div>
+                                </div>
+                                <div class="flex flex-col sm:flex-row gap-3 items-center w-full lg:w-auto">
+                                    <input type="text" id="real-search-input" oninput="debouncedRenderRealizationList()"
+                                        placeholder="Cari Nama / Pelatihan..."
+                                        class="w-full sm:w-64 px-4 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg text-sm text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                                </div>
+                            </div>
+                            <div class="mt-2 text-xs text-gray-400 text-right w-full">Data Pelaksanaan: <span
+                                    id="selected-year-realization" class="font-bold text-emerald-600">...</span></div>
+                        </div>
+
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                            <div
+                                class="grid grid-cols-12 bg-gray-50 px-6 py-3 border-b border-gray-200 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                <div class="col-span-1">No</div>
+                                <div class="col-span-2">SAP</div>
+                                <div class="col-span-8">Nama Peserta</div>
+                                <div class="col-span-1 text-center">Detail</div>
+                            </div>
+                            <div id="realization-list-container" class="divide-y divide-gray-100"></div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div id="data-modal" class="fixed inset-0 z-[60] hidden">
+                <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+                    <div class="fixed inset-0 bg-gray-500 bg-opacity-75" onclick="closeModal()"></div>
+                    <div
+                        class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                        <div class="bg-gray-50 px-4 py-3 border-b border-gray-200 flex justify-between items-center">
+                            <h3 class="text-lg leading-6 font-bold text-gray-900" id="modal-title">Tambah Data</h3>
+                            <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">✕</button>
+                        </div>
+                        <form id="addForm" onsubmit="saveData(event)"
+                            class="max-h-[80vh] overflow-y-auto modal-scroll px-6 py-6 space-y-4">
+                            <input type="hidden" id="form-type" value="cert">
+                            <input type="hidden" id="form-id" value="">
+                            <input type="hidden" id="form-edit-mode" value="add">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div><label class="block text-sm font-medium text-gray-700 mb-1">SAP ID</label><input
+                                        type="text" id="form-sap" required
+                                        class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"></div>
+                                <div><label class="block text-sm font-medium text-gray-700 mb-1">Nama
+                                        Karyawan</label><input type="text" id="form-nama" required
+                                        class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"></div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div><label class="block text-sm font-medium text-gray-700 mb-1">Item ID</label><input
+                                        type="text" id="form-itemId" required
+                                        class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"></div>
+                                <div><label class="block text-sm font-medium text-gray-700 mb-1">Rencana
+                                        Pelaksanaan</label><input type="text" id="form-periode"
+                                        class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                                </div>
+                            </div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Course Title</label><input
+                                    type="text" id="form-judul" required
+                                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"></div>
+
+                            <div id="fields-cert">
+                                <div class="grid grid-cols-2 gap-4 mb-4">
+                                    <div><label
+                                            class="block text-sm font-medium text-gray-700 mb-1">Anggaran</label><input
+                                            type="text" id="form-jumlah"
+                                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"></div>
+                                    <div><label
+                                            class="block text-sm font-medium text-gray-700 mb-1">Status</label><select
+                                            id="form-status"
+                                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                                            <option value="Tersedia">Tersedia</option>
+                                            <option value="Tidak Tersedia">Tidak Tersedia</option>
+                                        </select></div>
+                                </div>
+                                <div><label class="block text-sm font-medium text-gray-700 mb-1">Mandatory</label><input
+                                        type="text" id="form-mandatory"
+                                        class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"></div>
+                            </div>
+                            <div id="fields-lat" class="hidden">
+                                <div><label
+                                        class="block text-sm font-medium text-gray-700 mb-1">Instruktur</label><input
+                                        type="text" id="form-instruktur"
+                                        class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"></div>
+                            </div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Resiko</label><input
+                                    type="text" id="form-resiko"
+                                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"></div>
+                            <div class="pt-4 flex justify-end gap-3 border-t border-gray-200 mt-4">
+                                <button type="button" onclick="closeModal()"
+                                    class="px-4 py-2 bg-white text-gray-700 border border-gray-300 rounded-lg text-sm">Batal</button>
+                                <button type="submit" id="btn-save"
+                                    class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm">Simpan</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- REALIZATION DATA MODAL -->
+            <div id="realization-modal" class="fixed inset-0 z-[60] hidden">
+                <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+                    <div class="fixed inset-0 bg-gray-500 bg-opacity-75" onclick="closeRealizationModal()"></div>
+                    <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
+                    <div
+                        class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-3xl sm:w-full">
+                        <div class="bg-gray-50 px-4 py-3 border-b border-gray-200 flex justify-between items-center">
+                            <h3 class="text-lg leading-6 font-bold text-gray-900" id="realization-modal-title">Tambah
+                                Data Pelaksanaan
+                            </h3>
+                            <button onclick="closeRealizationModal()"
+                                class="text-gray-400 hover:text-gray-600">✕</button>
+                        </div>
+                        <form id="realizationForm" onsubmit="saveRealizationData(event)"
+                            class="max-h-[80vh] overflow-y-auto modal-scroll px-6 py-6 space-y-4">
+                            <input type="hidden" id="real-form-id" value="">
+                            <input type="hidden" id="real-form-mode" value="add">
+
+                            <!-- Basic Info -->
+                            <div class="border-b pb-4">
+                                <h4 class="text-sm font-bold text-gray-700 mb-3">Informasi Dasar</h4>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div><label class="block text-sm font-medium text-gray-700 mb-1">SAP Event <span
+                                                class="text-red-500">*</span></label>
+                                        <input type="text" id="real-sapEvent" required
+                                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                                    </div>
+                                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Item ID</label>
+                                        <input type="text" id="real-itemId"
+                                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-3 gap-4 mt-4">
+                                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Mulai <span
+                                                class="text-red-500">*</span></label>
+                                        <input type="date" id="real-startDate" required onchange="autoFillYearMonth()"
+                                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                                    </div>
+                                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Selesai
+                                            <span class="text-red-500">*</span></label>
+                                        <input type="date" id="real-endDate" required
+                                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                                    </div>
+                                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Room</label>
+                                        <input type="text" id="real-room"
+                                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-4 mt-4">
+                                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Bulan</label>
+                                        <select id="real-bulan"
+                                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                                            <option value="">Pilih Bulan</option>
+                                            <option value="Januari">Januari</option>
+                                            <option value="Februari">Februari</option>
+                                            <option value="Maret">Maret</option>
+                                            <option value="April">April</option>
+                                            <option value="Mei">Mei</option>
+                                            <option value="Juni">Juni</option>
+                                            <option value="Juli">Juli</option>
+                                            <option value="Agustus">Agustus</option>
+                                            <option value="September">September</option>
+                                            <option value="Oktober">Oktober</option>
+                                            <option value="November">November</option>
+                                            <option value="Desember">Desember</option>
+                                        </select>
+                                    </div>
+                                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Tahun</label>
+                                        <input type="text" id="real-tahun"
+                                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Training Info -->
+                            <div class="border-b pb-4">
+                                <h4 class="text-sm font-bold text-gray-700 mb-3">Informasi Pelatihan</h4>
+                                <div><label class="block text-sm font-medium text-gray-700 mb-1">Course Title <span
+                                            class="text-red-500">*</span></label>
+                                    <input type="text" id="real-courseTitle" required
+                                        class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                                </div>
+                                <div class="grid grid-cols-2 gap-4 mt-4">
+                                    <div><label class="block text-sm font-medium text-gray-700 mb-1">SAP
+                                            Instruktur</label>
+                                        <input type="text" id="real-sapInstruktur"
+                                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                                    </div>
+                                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Nama
+                                            Instruktur</label>
+                                        <input type="text" id="real-namaInstruktur"
+                                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Participant Info -->
+                            <div class="border-b pb-4">
+                                <h4 class="text-sm font-bold text-gray-700 mb-3">Informasi Peserta</h4>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div><label class="block text-sm font-medium text-gray-700 mb-1">SAP Peserta <span
+                                                class="text-red-500">*</span></label>
+                                        <input type="text" id="real-sapPeserta" required
+                                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                                    </div>
+                                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Nama Peserta <span
+                                                class="text-red-500">*</span></label>
+                                        <input type="text" id="real-namaPeserta" required
+                                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-4 mt-4">
+                                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Departemen</label>
+                                        <input type="text" id="real-departemen"
+                                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                                    </div>
+                                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Unit Kerja</label>
+                                        <input type="text" id="real-unitKerja"
+                                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Statistics -->
+                            <div>
+                                <h4 class="text-sm font-bold text-gray-700 mb-3">Statistik</h4>
+                                <div class="grid grid-cols-3 gap-4">
+                                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Jumlah
+                                            Hadir</label>
+                                        <input type="number" id="real-jumlahHadir"
+                                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                                    </div>
+                                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Durasi
+                                            (Jam)</label>
+                                        <input type="number" id="real-durasi" step="0.1"
+                                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                                    </div>
+                                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Kehadiran
+                                            (%)</label>
+                                        <input type="number" id="real-kehadiran" step="0.1"
+                                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="pt-4 flex justify-end gap-3 border-t border-gray-200 mt-4">
+                                <button type="button" onclick="closeRealizationModal()"
+                                    class="px-4 py-2 bg-white text-gray-700 border border-gray-300 rounded-lg text-sm">Batal</button>
+                                <button type="submit" id="btn-save-realization"
+                                    class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 text-sm">Simpan</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================================================================================= -->
+            <!-- EVALUASI PAGE                                                                     -->
+            <!-- ================================================================================= -->
+            <div id="page-evaluasi" class="content-section hidden">
+
+                <!-- VIEW 1: YEAR SELECTION -->
+                <div id="evaluasi-view-years">
+                    <div class="mb-8 flex justify-between items-center">
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-800">Evaluasi Pelatihan</h2>
+                            <p class="text-gray-600">Pilih tahun untuk melihat data evaluasi</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <!-- Debug buttons removed -->
+                        </div>
+                    </div>
+                    <div id="evaluasi-years-grid" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <!-- Year cards generated by JS -->
+                    </div>
+                </div>
+
+                <!-- VIEW 2: DETAIL (TABS) -->
+                <div id="evaluasi-view-detail" class="hidden">
+                    <div class="flex items-center gap-4 mb-6">
+                        <button onclick="closeEvaluasiDetail()"
+                            class="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M19 12H5" />
+                                <path d="M12 19l-7-7 7-7" />
+                            </svg>
+                        </button>
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-800">Evaluasi <span
+                                    id="evaluasi-active-year"></span></h2>
+                            <p class="text-gray-600">Kelola data evaluasi L1, L2, dan L3</p>
+                        </div>
+                    </div>
+
+                    <!-- TABS NAVIGATION -->
+                    <div class="flex border-b border-gray-200 mb-6 items-center justify-between">
+                        <div class="flex">
+                            <button onclick="switchEvaluasiTab('l1')" id="tab-l1"
+                                class="px-6 py-3 text-sm font-medium border-b-2 border-indigo-600 text-indigo-600 focus:outline-none">
+                                L1 - Reaction
+                            </button>
+                            <button onclick="switchEvaluasiTab('l2')" id="tab-l2"
+                                class="px-6 py-3 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700 focus:outline-none">
+                                L2 - Learning
+                            </button>
+                            <button onclick="switchEvaluasiTab('l3')" id="tab-l3"
+                                class="px-6 py-3 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700 focus:outline-none">
+                                L3 - Behavior
+                            </button>
+                        </div>
+                        <div class="flex gap-2 mr-4">
+                            <!-- Debug buttons removed -->
+                        </div>
+                    </div>
+
+                    <!-- TAB CONTENT: L1 (Reaction) -->
+                    <div id="evaluasi-content-l1" class="tab-content">
+                        <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+                            <div class="relative w-full md:w-80">
+                                <input type="text" placeholder="Cari peserta, pelatihan, atau SAP..."
+                                    onkeyup="debouncedFilterL1Data(this.value)"
+                                    class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all shadow-sm">
+                                <span class="absolute left-3.5 top-3 text-gray-400">
+                                    <i data-lucide="search" class="w-4 h-4"></i>
+                                </span>
+                            </div>
+                            <button onclick="openEvaluasiL1Modal('add', null)"
+                                class="w-full md:w-auto flex items-center justify-center gap-2 px-6 py-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 text-sm font-semibold transition-all shadow-md hover:shadow-lg active:scale-95">
+                                <span class="text-lg">+</span> Tambah L1
+                            </button>
+                        </div>
+                        <div id="l1-list-container" class="space-y-4 min-h-[200px]">
+                            <!-- L1 Data will be rendered here -->
+                        </div>
+                    </div>
+
+                    <!-- TAB CONTENT: L2 (Learning) -->
+                    <div id="evaluasi-content-l2" class="tab-content hidden">
+                        <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+                            <div class="relative w-full md:w-80">
+                                <input type="text" placeholder="Cari peserta, pelatihan, atau SAP..."
+                                    onkeyup="debouncedFilterL2Data(this.value)"
+                                    class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all shadow-sm">
+                                <span class="absolute left-3.5 top-3 text-gray-400">
+                                    <i data-lucide="search" class="w-4 h-4"></i>
+                                </span>
+                            </div>
+                            <button onclick="openEvaluasiL2Modal('add', null)"
+                                class="w-full md:w-auto flex items-center justify-center gap-2 px-6 py-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 text-sm font-semibold transition-all shadow-md hover:shadow-lg active:scale-95">
+                                <span class="text-lg">+</span> Tambah L2
+                            </button>
+                        </div>
+                        <div id="l2-list-container" class="space-y-4 min-h-[200px]">
+                            <!-- L2 Data will be rendered here -->
+                        </div>
+                    </div>
+
+                    <!-- TAB CONTENT: L3 (Behavior) -->
+                    <div id="evaluasi-content-l3" class="tab-content hidden">
+                        <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+                            <div class="relative w-full md:w-80">
+                                <input type="text" placeholder="Cari peserta, pelatihan, atau SAP..."
+                                    onkeyup="debouncedFilterL3Data(this.value)"
+                                    class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all shadow-sm">
+                                <span class="absolute left-3.5 top-3 text-gray-400">
+                                    <i data-lucide="search" class="w-4 h-4"></i>
+                                </span>
+                            </div>
+                            <button onclick="openEvaluasiL3Modal('add', null)"
+                                class="w-full md:w-auto flex items-center justify-center gap-2 px-6 py-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 text-sm font-semibold transition-all shadow-md hover:shadow-lg active:scale-95">
+                                <span class="text-lg">+</span> Tambah L3
+                            </button>
+                        </div>
+                        <div id="l3-list-container" class="space-y-4 min-h-[200px]">
+                            <!-- L3 Data will be rendered here -->
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- ================================================================================= -->
+            <!-- EVALUASI L1 MODAL                                                                 -->
+            <!-- ================================================================================= -->
+            <div id="evaluasi-l1-modal" class="fixed inset-0 z-[70] hidden">
+                <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+                    <div class="fixed inset-0 bg-gray-500 bg-opacity-75" onclick="closeEvaluasiL1Modal()"></div>
+                    <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
+                    <div
+                        class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
+
+                        <div
+                            class="bg-indigo-50 px-6 py-4 border-b border-indigo-100 flex justify-between items-center">
+                            <h3 class="text-lg font-bold text-indigo-900" id="evaluasi-l1-modal-title">Tambah Evaluasi
+                                L1</h3>
+                            <button onclick="closeEvaluasiL1Modal()"
+                                class="text-indigo-400 hover:text-indigo-600 font-bold text-xl">✕</button>
+                        </div>
+
+                        <form id="evaluasiL1Form" onsubmit="saveEvaluasiL1(event)"
+                            class="max-h-[80vh] overflow-y-auto modal-scroll px-6 py-6 space-y-6">
+                            <input type="hidden" id="l1-id" value="">
+                            <input type="hidden" id="l1-mode" value="add">
+
+                            <!-- INFO DASAR -->
+                            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                                <h4 class="text-sm font-bold text-gray-700 mb-4 uppercase tracking-wider border-b pb-2">
+                                    📋 Informasi
+                                    Dasar</h4>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div class="col-span-2">
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Pilih Pelaksanaan
+                                            <span class="text-red-500">*</span></label>
+                                        <select id="l1-pelaksanaanId" required onchange="autoFillL1Peserta()"
+                                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white">
+                                            <option value="">-- Pilih --</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">SAP Peserta <span
+                                                class="text-red-500">*</span></label>
+                                        <input type="text" id="l1-sap" required
+                                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-gray-100"
+                                            readonly>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Nama Peserta</label>
+                                        <input type="text" id="l1-nama"
+                                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-gray-100"
+                                            readonly>
+                                    </div>
+                                    <div class="col-span-2">
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Judul
+                                            Pelatihan</label>
+                                        <input type="text" id="l1-judul"
+                                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-gray-100"
+                                            readonly>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- PENYELENGGARAAN -->
+                            <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                                <h4
+                                    class="text-sm font-bold text-blue-800 mb-4 uppercase tracking-wider border-b border-blue-200 pb-2">
+                                    🏢 Penyelenggaraan</h4>
+                                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-600 mb-1">Tempat</label>
+                                        <input type="text" id="l1-tempat"
+                                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-600 mb-1">Fasilitas</label>
+                                        <input type="text" id="l1-fasilitas"
+                                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-600 mb-1">Pelayanan</label>
+                                        <input type="text" id="l1-pelayanan"
+                                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-blue-700 mb-1">Rata-rata</label>
+                                        <input type="text" id="l1-rataPenyelenggaraan"
+                                            class="w-full border border-blue-300 bg-blue-100 rounded-lg px-3 py-2 text-sm font-bold text-blue-800">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- PEMBELAJARAN -->
+                            <div class="bg-green-50 p-4 rounded-lg border border-green-200">
+                                <h4
+                                    class="text-sm font-bold text-green-800 mb-4 uppercase tracking-wider border-b border-green-200 pb-2">
+                                    📚 Pembelajaran</h4>
+                                <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-600 mb-1">Materi</label>
+                                        <input type="text" id="l1-materi"
+                                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-green-500 focus:border-green-500">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-600 mb-1">Tujuan</label>
+                                        <input type="text" id="l1-tujuan"
+                                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-green-500 focus:border-green-500">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-600 mb-1">Penyajian</label>
+                                        <input type="text" id="l1-penyajian"
+                                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-green-500 focus:border-green-500">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-600 mb-1">Disiplin</label>
+                                        <input type="text" id="l1-disiplin"
+                                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-green-500 focus:border-green-500">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-green-700 mb-1">Rata-rata</label>
+                                        <input type="text" id="l1-rataPembelajaran"
+                                            class="w-full border border-green-300 bg-green-100 rounded-lg px-3 py-2 text-sm font-bold text-green-800">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- INSTRUKTUR -->
+                            <div class="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                                <h4
+                                    class="text-sm font-bold text-purple-800 mb-4 uppercase tracking-wider border-b border-purple-200 pb-2 flex items-center gap-2">
+                                    <i data-lucide="user-check" class="w-4 h-4"></i> Instruktur
+                                </h4>
+                                <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-600 mb-1">Pengetahuan</label>
+                                        <input type="text" id="l1-pengetahuan"
+                                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-purple-500 focus:border-purple-500">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-600 mb-1">Presentasi</label>
+                                        <input type="text" id="l1-presentasi"
+                                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-purple-500 focus:border-purple-500">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-600 mb-1">Perilaku</label>
+                                        <input type="text" id="l1-perilaku"
+                                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-purple-500 focus:border-purple-500">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-600 mb-1">Waktu</label>
+                                        <input type="text" id="l1-waktu"
+                                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-purple-500 focus:border-purple-500">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-purple-700 mb-1">Rata-rata</label>
+                                        <input type="text" id="l1-rataInstruktur"
+                                            class="w-full border border-purple-300 bg-purple-100 rounded-lg px-3 py-2 text-sm font-bold text-purple-800">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- TOTAL & KOMENTAR -->
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div class="md:col-span-1">
+                                    <label class="block text-sm font-bold text-gray-800 mb-1">Rata-rata
+                                        Keseluruhan</label>
+                                    <input type="text" id="l1-rataKeseluruhan" placeholder="Skor Nilai L1"
+                                        class="w-full border-2 border-indigo-500 bg-indigo-50 rounded-lg px-4 py-3 text-lg font-bold text-indigo-900 text-center">
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Komentar Peserta</label>
+                                    <textarea id="l1-komentar" rows="3"
+                                        class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"></textarea>
+                                </div>
+                            </div>
+
+                            <div class="pt-4 flex justify-end gap-3 border-t border-gray-200">
+                                <button type="button" onclick="closeEvaluasiL1Modal()"
+                                    class="px-4 py-2 bg-white text-gray-700 border border-gray-300 rounded-lg text-sm">Batal</button>
+                                <button type="submit" id="btn-save-l1"
+                                    class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm font-medium shadow-sm">Simpan
+                                    Evaluasi</button>
+                            </div>
+
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================================================================================= -->
+            <!-- EVALUASI L2 MODAL (LEARNING)                                                      -->
+            <!-- ================================================================================= -->
+            <div id="evaluasi-l2-modal" class="fixed inset-0 z-[70] hidden">
+                <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+                    <div class="fixed inset-0 bg-gray-500 bg-opacity-75" onclick="closeEvaluasiL2Modal()"></div>
+                    <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
+                    <div
+                        class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
+
+                        <div
+                            class="bg-indigo-50 px-6 py-4 border-b border-indigo-100 flex justify-between items-center">
+                            <h3 class="text-lg font-bold text-indigo-900" id="evaluasi-l2-modal-title">Tambah Evaluasi
+                                L2</h3>
+                            <button onclick="closeEvaluasiL2Modal()"
+                                class="text-indigo-400 hover:text-indigo-600 font-bold text-xl">✕</button>
+                        </div>
+
+                        <form id="evaluasiL2Form" onsubmit="saveEvaluasiL2(event)" class="px-6 py-6 space-y-6">
+                            <input type="hidden" id="l2-id" value="">
+                            <input type="hidden" id="l2-mode" value="add">
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Pilih Pelaksanaan <span
+                                        class="text-red-500">*</span></label>
+                                <select id="l2-pelaksanaanId" required onchange="autoFillL2Peserta()"
+                                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                                    <option value="">-- Pilih --</option>
+                                </select>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Judul Pelatihan</label>
+                                    <input type="text" id="l2-judul"
+                                        class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-gray-100"
+                                        readonly>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">SAP Peserta</label>
+                                    <input type="text" id="l2-sap"
+                                        class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-gray-100"
+                                        readonly>
+                                </div>
+                                <div class="col-span-2">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Nama Peserta</label>
+                                    <input type="text" id="l2-nama"
+                                        class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-gray-100"
+                                        readonly>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg">
+                                <div>
+                                    <label class="block text-sm font-bold text-gray-700 mb-1">Pre-Test</label>
+                                    <input type="number" id="l2-preTest" step="0.01"
+                                        class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-bold text-indigo-700 mb-1">Post-Test</label>
+                                    <input type="number" id="l2-postTest" step="0.01"
+                                        class="w-full border border-indigo-300 rounded-lg px-3 py-2 text-sm focus:ring-indigo-500">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Keterangan (Ket.)</label>
+                                <textarea id="l2-ket" rows="2"
+                                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                                    placeholder="Catatan tambahan..."></textarea>
+                            </div>
+
+                            <div class="pt-4 flex justify-end gap-3 border-t border-gray-200">
+                                <button type="button" onclick="closeEvaluasiL2Modal()"
+                                    class="px-4 py-2 bg-white text-gray-700 border border-gray-300 rounded-lg text-sm">Batal</button>
+                                <button type="submit" id="btn-save-l2"
+                                    class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm font-medium shadow-sm">Simpan
+                                    Evaluasi L2</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================================================================================= -->
+            <!-- EVALUASI L3 MODAL (BEHAVIOR)                                                      -->
+            <!-- ================================================================================= -->
+            <div id="evaluasi-l3-modal" class="fixed inset-0 z-[70] hidden">
+                <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+                    <div class="fixed inset-0 bg-gray-500 bg-opacity-75" onclick="closeEvaluasiL3Modal()"></div>
+                    <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
+                    <div
+                        class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
+
+                        <div
+                            class="bg-indigo-50 px-6 py-4 border-b border-indigo-100 flex justify-between items-center">
+                            <h3 class="text-lg font-bold text-indigo-900" id="evaluasi-l3-modal-title">Tambah Evaluasi
+                                L3</h3>
+                            <button onclick="closeEvaluasiL3Modal()"
+                                class="text-indigo-400 hover:text-indigo-600 font-bold text-xl">✕</button>
+                        </div>
+
+                        <form id="evaluasiL3Form" onsubmit="saveEvaluasiL3(event)" class="px-6 py-6 space-y-6">
+                            <input type="hidden" id="l3-id" value="">
+                            <input type="hidden" id="l3-mode" value="add">
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Pilih Pelaksanaan <span
+                                        class="text-red-500">*</span></label>
+                                <select id="l3-pelaksanaanId" required onchange="autoFillL3Peserta()"
+                                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                                    <option value="">-- Pilih --</option>
+                                </select>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Judul Pelatihan</label>
+                                    <input type="text" id="l3-judul"
+                                        class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-gray-100"
+                                        readonly>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">SAP Peserta</label>
+                                    <input type="text" id="l3-sap"
+                                        class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-gray-100"
+                                        readonly>
+                                </div>
+                                <div class="col-span-2">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Nama Peserta</label>
+                                    <input type="text" id="l3-nama"
+                                        class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-gray-100"
+                                        readonly>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg">
+                                <div>
+                                    <label class="block text-sm font-bold text-gray-700 mb-1">Nilai Evaluasi</label>
+                                    <input type="text" id="l3-nilaiEvaluasi"
+                                        class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-bold text-gray-700 mb-1">Tanggal Eval</label>
+                                    <input type="date" id="l3-tanggalEval"
+                                        class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                                </div>
+                                <div class="col-span-2">
+                                    <label class="block text-sm font-bold text-purple-700 mb-1">Key Behaviour</label>
+                                    <input type="text" id="l3-keyBehaviour"
+                                        class="w-full border border-purple-300 rounded-lg px-3 py-2 text-sm focus:ring-purple-500">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Keterangan</label>
+                                <textarea id="l3-ket" rows="2"
+                                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                                    placeholder="Catatan..."></textarea>
+                            </div>
+
+                            <div class="pt-4 flex justify-end gap-3 border-t border-gray-200">
+                                <button type="button" onclick="closeEvaluasiL3Modal()"
+                                    class="px-4 py-2 bg-white text-gray-700 border border-gray-300 rounded-lg text-sm">Batal</button>
+                                <button type="submit" id="btn-save-l3"
+                                    class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm font-medium shadow-sm">Simpan
+                                    Evaluasi L3</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================================================================================= -->
+            <!-- ANALISIS PAGE                                                                      -->
+            <!-- ================================================================================= -->
+            <div id="page-analisis" class="content-section hidden">
+
+                <div class="mb-6">
+                    <h2 class="text-xl font-bold text-gray-800">Analisis Data</h2>
+                    <p class="text-xs text-gray-500">Visualisasi data pelatihan, pelaksanaan, dan evaluasi</p>
+                </div>
+
+                <!-- ROW 1: Tren & Distribusi -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
+
+                    <!-- Chart 1: Tren Pelaksanaan per Tahun -->
+                    <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <p class="text-xs font-bold text-gray-500 uppercase tracking-wide">Tren Pelaksanaan</p>
+                                <p class="text-sm text-gray-400">Jumlah peserta per tahun</p>
+                            </div>
+                            <div
+                                class="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center text-emerald-600">
+                                <i data-lucide="line-chart" class="w-4 h-4"></i>
+                            </div>
+                        </div>
+                        <div class="relative h-64">
+                            <canvas id="chart-tren-pelaksanaan"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Chart 2: Distribusi Departemen -->
+                    <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <p class="text-xs font-bold text-gray-500 uppercase tracking-wide">Distribusi Departemen
+                                </p>
+                                <p class="text-sm text-gray-400">Top 8 departemen terbanyak</p>
+                            </div>
+                            <div
+                                class="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center text-indigo-600">
+                                <i data-lucide="building-2" class="w-4 h-4"></i>
+                            </div>
+                        </div>
+                        <div class="relative h-64">
+                            <canvas id="chart-distribusi-dept"></canvas>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- ROW 2: Perencanaan vs Realisasi & Skor Evaluasi L1 -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
+
+                    <!-- Chart 3: Perencanaan vs Realisasi -->
+                    <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <p class="text-xs font-bold text-gray-500 uppercase tracking-wide">Perencanaan vs
+                                    Realisasi</p>
+                                <p class="text-sm text-gray-400">Target (Sert+LAT) vs Pelaksanaan per tahun</p>
+                            </div>
+                            <div class="w-8 h-8 bg-teal-100 rounded-lg flex items-center justify-center text-teal-600">
+                                <i data-lucide="target" class="w-4 h-4"></i>
+                            </div>
+                        </div>
+                        <div class="relative h-64">
+                            <canvas id="chart-plan-vs-real"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Chart 4: Rata-rata Skor Evaluasi L1 -->
+                    <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <p class="text-xs font-bold text-gray-500 uppercase tracking-wide">Skor Evaluasi L1</p>
+                                <p class="text-sm text-gray-400">Rata-rata skor per tahun</p>
+                            </div>
+                            <div
+                                class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center text-purple-600">
+                                <i data-lucide="star" class="w-4 h-4"></i>
+                            </div>
+                        </div>
+                        <div class="relative h-64">
+                            <canvas id="chart-skor-l1"></canvas>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- ROW 3: Skor Evaluasi L2 & L3 -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+
+                    <!-- Chart 5: Peningkatan Evaluasi L2 -->
+                    <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <p class="text-xs font-bold text-gray-500 uppercase tracking-wide">Evaluasi L2
+                                    (Peningkatan)</p>
+                                <p class="text-sm text-gray-400">Rata-rata Pre vs Post Test per tahun</p>
+                            </div>
+                            <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600">
+                                <i data-lucide="brain" class="w-4 h-4"></i>
+                            </div>
+                        </div>
+                        <div class="relative h-64">
+                            <canvas id="chart-skor-l2"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Chart 6: Nilai Evaluasi L3 -->
+                    <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <p class="text-xs font-bold text-gray-500 uppercase tracking-wide">Evaluasi L3
+                                    (Behavior)</p>
+                                <p class="text-sm text-gray-400">Rata-rata penerapan perilaku per tahun</p>
+                            </div>
+                            <div
+                                class="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center text-orange-600">
+                                <i data-lucide="users" class="w-4 h-4"></i>
+                            </div>
+                        </div>
+                        <div class="relative h-64">
+                            <canvas id="chart-skor-l3"></canvas>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div> <!-- ================================================================================= -->
+            <!-- LAPORAN & EKSPOR PAGE                                                             -->
+            <!-- ================================================================================= -->
+            <div id="page-laporan" class="content-section hidden">
+                <div class="mb-6">
+                    <h2 class="text-xl font-bold text-gray-800">Laporan & Ekspor Data</h2>
+                    <p class="text-xs text-gray-500">Pusat ringkasan data pelatihan dan ekspor ke Excel</p>
+                </div>
+
+                <!-- Laporan Tabs -->
+                <div class="flex border-b border-gray-200 mb-6 bg-white p-2 rounded-t-xl">
+                    <button onclick="switchLaporanTab('rekap')" id="tab-lap-rekap"
+                        class="px-5 py-2.5 text-sm font-bold border-b-2 border-indigo-600 text-indigo-700 focus:outline-none transition-colors flex items-center gap-2">
+                        <i data-lucide="user" class="w-4 h-4"></i> Rekap Karyawan (Individu)
+                    </button>
+                    <button onclick="switchLaporanTab('matriks')" id="tab-lap-matriks"
+                        class="px-5 py-2.5 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-indigo-600 focus:outline-none transition-colors flex items-center gap-2">
+                        <i data-lucide="bar-chart-3" class="w-4 h-4"></i> Matriks Evaluasi L1-L2-L3
+                    </button>
+                    <button onclick="switchLaporanTab('ekspor')" id="tab-lap-ekspor"
+                        class="px-5 py-2.5 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-indigo-600 focus:outline-none transition-colors flex items-center gap-2">
+                        <i data-lucide="file-output" class="w-4 h-4"></i> Ekspor Excel Kustom
+                    </button>
+                </div>
+
+                <!-- Laporan Content: Rekap Karyawan -->
+                <div id="lap-content-rekap"
+                    class="laporan-tab-content bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                    <div class="flex flex-col md:flex-row gap-4 mb-6 items-end">
+                        <div class="w-full md:w-1/2">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Cari Karyawan (Nama /
+                                SAP)</label>
+                            <div class="relative">
+                                <input type="text" id="lap-search-karyawan"
+                                    onkeyup="if(event.key === 'Enter') _renderTabRekapKaryawan()"
+                                    placeholder="Masukkan nama atau SAP lalu Enter..."
+                                    class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                                <span class="absolute left-3 top-2.5 text-gray-400">
+                                    <i data-lucide="search" class="w-4 h-4"></i>
+                                </span>
+                            </div>
+                        </div>
+                        <button onclick="_renderTabRekapKaryawan()"
+                            class="px-5 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium">Cari
+                            Profil</button>
+                    </div>
+
+                    <div id="lap-rekap-info"
+                        class="hidden mb-6 p-4 bg-indigo-50 border border-indigo-100 rounded-lg flex items-center gap-4">
+                        <div
+                            class="w-12 h-12 bg-indigo-500 text-white rounded-full flex items-center justify-center font-bold text-xl drop-shadow-md">
+                            <i data-lucide="user" class="w-6 h-6"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-lg text-indigo-900" id="lap-rekap-nama">-</h3>
+                            <p class="text-sm text-indigo-700">SAP: <span id="lap-rekap-sap"
+                                    class="font-mono bg-white px-2 py-0.5 rounded border border-indigo-200">-</span></p>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto rounded-lg border border-gray-200 hidden"
+                        id="lap-rekap-table-container">
+                        <table class="w-full text-sm text-left whitespace-nowrap">
+                            <thead class="bg-gray-50 text-gray-600 font-semibold border-b">
+                                <tr>
+                                    <th class="px-4 py-3">No</th>
+                                    <th class="px-4 py-3">Judul Pelatihan</th>
+                                    <th class="px-4 py-3">Penyelenggara</th>
+                                    <th class="px-4 py-3">Tanggal / Tahun</th>
+                                    <th class="px-4 py-3">Nilai L2 (Post)</th>
+                                    <th class="px-4 py-3">Nilai L3</th>
+                                </tr>
+                            </thead>
+                            <tbody id="lap-rekap-tbody" class="divide-y divide-gray-100">
+                                <!-- Injected via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="lap-rekap-empty" class="text-center py-10 text-gray-400 italic">Silakan gunakan fitur
+                        pencarian untuk
+                        melihat riwayat pelatihan karyawan.</div>
+                </div>
+
+                <!-- Laporan Content: Matriks Evaluasi -->
+                <div id="lap-content-matriks"
+                    class="laporan-tab-content hidden bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-bold text-gray-800">Matriks Hasil Evaluasi Training</h3>
+                        <select id="lap-matriks-year" onchange="_renderTabMatriksEvaluasi()"
+                            class="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-gray-50">
+                            <option value="ALL">Semua Tahun</option>
+                        </select>
+                    </div>
+                    <div class="overflow-x-auto rounded-lg border border-gray-200">
+                        <table class="w-full text-sm text-left">
+                            <thead
+                                class="bg-gray-50 text-gray-800 font-semibold border-b border-gray-300 text-xs uppercase tracking-wider">
+                                <tr>
+                                    <th class="px-4 py-3">No</th>
+                                    <th class="px-4 py-3 min-w-[200px]">Program Pelatihan</th>
+                                    <th class="px-4 py-3">Tahun</th>
+                                    <th class="px-4 py-3 text-center bg-purple-50">Rata-rata L1<br><span
+                                            class="text-[10px] text-purple-600 normal-case font-normal">(Skala 5)</span>
+                                    </th>
+                                    <th class="px-4 py-3 text-center bg-blue-50">Rata-rata L2<br><span
+                                            class="text-[10px] text-blue-600 normal-case font-normal">(Pre vs
+                                            Post)</span></th>
+                                    <th class="px-4 py-3 text-center bg-orange-50">Rata-rata L3<br><span
+                                            class="text-[10px] text-orange-600 normal-case font-normal">(Behavior)</span>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody id="lap-matriks-tbody" class="divide-y divide-gray-100">
+                                <!-- Injected via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Laporan Content: Ekspor Data -->
+                <div id="lap-content-ekspor"
+                    class="laporan-tab-content hidden bg-white p-8 rounded-xl border border-gray-200 shadow-sm text-center">
+                    <div class="max-w-md mx-auto">
+                        <div
+                            class="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i data-lucide="database" class="w-8 h-8"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-800 mb-2">Export Data ke Excel (.xlsx)</h3>
+                        <p class="text-gray-500 text-sm mb-8">Pilih tabel database mana yang ingin Anda unduh raw
+                            data-nya secara
+                            penuh untuk keperluan analisis lanjutan di Microsoft Excel.</p>
+
+                        <div class="text-left bg-gray-50 p-6 rounded-lg border border-gray-200 mb-6">
+                            <div class="mb-4">
+                                <label class="block text-sm font-bold text-gray-700 mb-2">Pilih Jenis Data:</label>
+                                <select id="lap-export-type" class="w-full border border-gray-300 rounded-lg px-3 py-2">
+                                    <option value="realisasi">Data Pelaksanaan / Realisasi</option>
+                                    <option value="cert">Perencanaan Sertifikasi</option>
+                                    <option value="lat">Perencanaan LAT</option>
+                                    <option value="l1">Evaluasi L1 (Reaction)</option>
+                                    <option value="l2">Evaluasi L2 (Learning)</option>
+                                    <option value="l3">Evaluasi L3 (Behavior)</option>
+                                </select>
+                            </div>
+                            <div class="mb-4 hidden"> <!-- Hidden for now, can implement year filter later if needed -->
+                                <label class="block text-sm font-bold text-gray-700 mb-2">Tahun:</label>
+                                <select id="lap-export-year" class="w-full border border-gray-300 rounded-lg px-3 py-2">
+                                    <option value="ALL">Semua Waktu</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <button onclick="exportToExcel()"
+                            class="w-full py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg shadow-md transition-colors flex items-center justify-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="7 10 12 15 17 10"></polyline>
+                                <line x1="12" y1="15" x2="12" y2="3"></line>
+                            </svg>
+                            Unduh Data Sekarang
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
+        <!-- Custom Dialog Overlay -->
+        <div id="custom-dialog" class="custom-dialog-overlay">
+            <div class="custom-dialog-card">
+                <div id="dialog-icon-bg" class="dialog-icon-wrapper">
+                    <i id="dialog-icon" data-lucide="check" class="w-8 h-8"></i>
+                </div>
+                <h3 id="dialog-title" class="text-xl font-bold text-gray-900 mb-2">Pemberitahuan</h3>
+                <p id="dialog-message" class="text-gray-500 mb-8 px-2">Data Anda berhasil disimpan.</p>
+
+                <div id="dialog-actions-single" class="hidden">
+                    <button onclick="closeCustomDialog()"
+                        class="w-full py-3 bg-gray-900 text-white rounded-xl font-semibold hover:bg-black transition-colors shadow-lg">OK</button>
+                </div>
+
+                <div id="dialog-actions-confirm" class="hidden flex gap-3">
+                    <button onclick="closeCustomDialog(false)"
+                        class="flex-1 py-3 bg-gray-100 text-gray-700 rounded-xl font-semibold hover:bg-gray-200 transition-colors">Batal</button>
+                    <button id="dialog-confirm-btn"
+                        class="flex-1 py-3 bg-red-600 text-white rounded-xl font-semibold hover:bg-red-700 transition-colors shadow-md">Hapus</button>
+                </div>
+            </div>
+        </div>
+
+        <?!= include('script'); ?>
+</body>
+
+</html>
